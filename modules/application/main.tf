@@ -26,6 +26,7 @@ resource "aws_launch_template" "main" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
+    UUID=$(cat /proc/sys/kernel/random/uuid)
     TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
     INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
     INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-type)
@@ -34,6 +35,7 @@ resource "aws_launch_template" "main" {
     yum install -y httpd
     cat <<HTML > /var/www/html/index.html
     <h1>Instance Details</h1>
+    <p>UUID: $UUID</p>
     <p>Instance ID: $INSTANCE_ID</p>
     <p>Instance Type: $INSTANCE_TYPE</p>
     <p>Availability Zone: $AZ</p>
