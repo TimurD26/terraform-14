@@ -75,6 +75,11 @@ resource "aws_lb_target_group" "main" {
     interval            = 10
   }
 
+  stickiness {
+    type    = "lb_cookie"
+    enabled = false
+  }
+
   tags = {
     Name    = "${var.name_prefix}-tg"
     Project = var.project_tag
@@ -112,9 +117,9 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_autoscaling_group" "main" {
   name                = "${var.name_prefix}-asg"
-  desired_capacity    = 2
-  max_size            = 2
-  min_size            = 2
+  desired_capacity    = 3
+  max_size            = 3
+  min_size            = 3
   vpc_zone_identifier = var.subnet_ids
 
   launch_template {
