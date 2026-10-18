@@ -116,11 +116,15 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_autoscaling_group" "main" {
-  name                = "${var.name_prefix}-asg"
-  desired_capacity    = 3
-  max_size            = 3
-  min_size            = 3
-  vpc_zone_identifier = var.subnet_ids
+  name                      = "${var.name_prefix}-asg"
+  desired_capacity          = 2
+  max_size                  = 2
+  min_size                  = 2
+  vpc_zone_identifier       = var.subnet_ids
+  target_group_arns         = [aws_lb_target_group.main.arn]
+  health_check_type         = "ELB"
+  health_check_grace_period = 120
+  wait_for_elb_capacity     = 2
 
   launch_template {
     id      = aws_launch_template.main.id
@@ -138,13 +142,4 @@ resource "aws_autoscaling_group" "main" {
     value               = var.project_tag
     propagate_at_launch = true
   }
-
-  lifecycle {
-    ignore_changes = [load_balancers, target_group_arns]
-  }
-}
-
-resource "aws_autoscaling_attachment" "main" {
-  autoscaling_group_name = aws_autoscaling_group.main.name
-  lb_target_group_arn    = aws_lb_target_group.main.arn
 }
