@@ -33,17 +33,15 @@ resource "aws_launch_template" "main" {
     AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
     LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
     yum install -y httpd
-    cat <<HTML > /var/www/html/index.html
-    <h1>Instance Details</h1>
-    <p>UUID: $UUID</p>
-    <p>Instance ID: $INSTANCE_ID</p>
-    <p>Instance Type: $INSTANCE_TYPE</p>
-    <p>Availability Zone: $AZ</p>
-    <p>Private IP: $LOCAL_IP</p>
-HTML
+    echo "<h1>Instance Details</h1>" > /var/www/html/index.html
+    echo "<p>UUID: $UUID</p>" >> /var/www/html/index.html
+    echo "<p>Instance ID: $INSTANCE_ID</p>" >> /var/www/html/index.html
+    echo "<p>Instance Type: $INSTANCE_TYPE</p>" >> /var/www/html/index.html
+    echo "<p>Availability Zone: $AZ</p>" >> /var/www/html/index.html
+    echo "<p>Private IP: $LOCAL_IP</p>" >> /var/www/html/index.html
     systemctl start httpd
     systemctl enable httpd
-    EOF
+  EOF
   )
 
   tag_specifications {
@@ -122,9 +120,7 @@ resource "aws_autoscaling_group" "main" {
   min_size                  = 2
   vpc_zone_identifier       = var.subnet_ids
   target_group_arns         = [aws_lb_target_group.main.arn]
-  health_check_type         = "ELB"
-  health_check_grace_period = 120
-  wait_for_elb_capacity     = 2
+  health_check_grace_period = 300
 
   launch_template {
     id      = aws_launch_template.main.id
